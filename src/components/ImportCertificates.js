@@ -27,7 +27,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
 
 // Constantes pour la conversion des dates Excel
 const millisecondsPerDay = 24 * 60 * 60 * 1000;

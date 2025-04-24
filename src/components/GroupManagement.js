@@ -53,7 +53,7 @@ const GroupManagement = () => {
 
   const fetchGroups = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/groups', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/groups`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -104,7 +104,7 @@ const GroupManagement = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/groups/${groupId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/groups/${groupId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -127,8 +127,8 @@ const GroupManagement = () => {
 
     try {
       const url = editingGroup 
-        ? `http://localhost:5000/api/groups/${editingGroup._id}`
-        : 'http://localhost:5000/api/groups';
+        ? `${process.env.REACT_APP_API_URL}/api/groups/${editingGroup._id}`
+        : `${process.env.REACT_APP_API_URL}/api/groups`;
       
       const response = await fetch(url, {
         method: editingGroup ? 'PUT' : 'POST',

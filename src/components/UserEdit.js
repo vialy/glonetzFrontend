@@ -15,6 +15,8 @@ import {
   Typography
 } from '@mui/material';
 
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
+
 const UserEdit = ({ user, open, onClose, onUpdate }) => {
   const { token } = useAuth();
   const [username, setUsername] = useState(user?.username || '');
@@ -39,7 +41,7 @@ const UserEdit = ({ user, open, onClose, onUpdate }) => {
         updateData.password = password;
       }
 
-      const response = await fetch(`http://localhost:5000/api/users/${user._id}`, {
+      const response = await fetch(`${API_URL}/users/${user._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

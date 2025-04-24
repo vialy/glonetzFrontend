@@ -15,6 +15,8 @@ import {
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
+
 const UserCreate = ({ open, onClose, onUserCreated }) => {
   const { token } = useAuth();
   const [formData, setFormData] = useState({
@@ -25,20 +27,13 @@ const UserCreate = ({ open, onClose, onUserCreated }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

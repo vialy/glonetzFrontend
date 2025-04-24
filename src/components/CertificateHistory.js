@@ -18,6 +18,8 @@ import {
 import HistoryIcon from '@mui/icons-material/History';
 import CreateIcon from '@mui/icons-material/Create';
 
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
+
 const CertificateHistory = ({ certificate, open, onClose }) => {
   const { token } = useAuth();
   const [history, setHistory] = useState([]);
@@ -29,7 +31,7 @@ const CertificateHistory = ({ certificate, open, onClose }) => {
       setLoading(true);
       setError('');
       
-      const response = await fetch(`http://localhost:5000/api/certificates/${certificate._id}`, {
+      const response = await fetch(`${API_URL}/certificates/${certificate._id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -10,12 +10,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
-  FormHelperText
+  Grid
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
 
 const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
   const { token } = useAuth();

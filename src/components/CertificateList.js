@@ -49,13 +49,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import SortIcon from '@mui/icons-material/Sort';
 import HistoryIcon from '@mui/icons-material/History';
-import DownloadIcon from '@mui/icons-material/Download';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -94,31 +92,6 @@ const SearchReferenceField = memo(({ value, onChange }) => (
   />
 ));
 
-const SearchGroupCodeField = memo(({ value, onChange }) => (
-  <TextField
-    fullWidth
-    label="Groupe cde"
-    value={value}
-    onChange={onChange}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon />
-        </InputAdornment>
-      ),
-    }}
-    sx={{
-      '& .MuiInputBase-root': {
-        '&.Mui-focused': {
-          '& > input': {
-            caretColor: 'auto',
-          },
-        },
-      },
-    }}
-  />
-));
-
 const CertificateList = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -133,12 +106,10 @@ const CertificateList = () => {
   const [searchDate, setSearchDate] = useState('');
   const [searchReference, setSearchReference] = useState('');
   const [searchGroupCode, setSearchGroupCode] = useState('');
-  const [sortOrder, setSortOrder] = useState('asc');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [selectedCertificates, setSelectedCertificates] = useState([]);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressDialog, setProgressDialog] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -245,11 +216,11 @@ const CertificateList = () => {
       if (!a.fullName) return 1;
       if (!b.fullName) return -1;
       const comparison = a.fullName.localeCompare(b.fullName);
-      return sortOrder === 'asc' ? comparison : -comparison;
+      return comparison;
     });
 
     setFilteredCertificates(filtered);
-  }, [certificates, searchName, searchReference, searchGroupCode, searchDate, sortOrder]);
+  }, [certificates, searchName, searchReference, searchGroupCode, searchDate]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -258,10 +229,6 @@ const CertificateList = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleSortToggle = () => {
-    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
   };
 
   const handleFormSubmit = async (formData) => {
@@ -504,7 +471,6 @@ const CertificateList = () => {
       return;
     }
 
-    setIsGenerating(true);
     setProgressDialog(true);
     setProgress(0);
     let successCount = 0;
@@ -523,7 +489,7 @@ const CertificateList = () => {
           await delay(3000); // 3 secondes entre les tentatives
         }
 
-        const response = await fetch(`http://localhost:5000/api/certificates/${certificateId}/pdf`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/certificates/${certificateId}/pdf`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -596,7 +562,6 @@ const CertificateList = () => {
     } catch (err) {
       console.error('Error in batch processing:', err);
     } finally {
-      setIsGenerating(false);
       setProgressDialog(false);
       setProgress(0);
       

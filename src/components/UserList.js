@@ -25,6 +25,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
+const API_URL = `${process.env.REACT_APP_API_URL}/api`;
+
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
@@ -40,7 +42,7 @@ const UserList = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch(`${API_URL}/users`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -94,7 +96,7 @@ const UserList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${deleteUser._id}`, {
+      const response = await fetch(`${API_URL}/users/${deleteUser._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
