@@ -70,6 +70,7 @@ const PreviewRow = ({ row }) => {
       </TableCell>
       <TableCell>{row['Nombre de leçons']}</TableCell>
       <TableCell>{row['Leçons suivies']}</TableCell>
+      <TableCell>{row['Info cours']}</TableCell>
       <TableCell>{row['Commentaires']}</TableCell>
     </TableRow>
   );
@@ -371,6 +372,7 @@ const ImportCertificates = ({ open, onClose, onImportComplete }) => {
                     <TableCell>Date de fin</TableCell>
                     <TableCell>Nombre de leçons</TableCell>
                     <TableCell>Leçons suivies</TableCell>
+                    <TableCell>Info cours</TableCell>
                     <TableCell>Commentaires</TableCell>
                   </TableRow>
                 </TableHead>

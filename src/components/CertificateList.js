@@ -36,10 +36,7 @@ import {
   CardContent,
   CardActions,
   Stack,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Autocomplete,
   List,
   ListItem,
   ListItemText
@@ -763,61 +760,57 @@ const CertificateList = () => {
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <FormControl fullWidth variant="outlined">
-            <InputLabel id="group-search-label">Groupe code</InputLabel>
-            <Select
-              labelId="group-search-label"
-              value={searchGroupCode}
-              onChange={(e) => setSearchGroupCode(e.target.value)}
-              label="Groupe code"
-              sx={{
-                height: '56px',
-                minWidth: '250px',
-                '& .MuiSelect-select': {
-                  display: 'flex',
-                  alignItems: 'center',
-                  paddingLeft: '44px',
-                  minHeight: '56px',
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word'
-                },
-                '& .MuiMenuItem-root': {
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word'
-                }
-              }}
-              startAdornment={
-                <InputAdornment position="start" sx={{ position: 'absolute', left: '14px' }}>
-                  <SearchIcon />
-                </InputAdornment>
+          <Autocomplete
+            fullWidth
+            options={groups}
+            getOptionLabel={(option) => option.groupCode || ''}
+            value={groups.find(group => group.groupCode === searchGroupCode) || null}
+            onChange={(event, newValue) => {
+              setSearchGroupCode(newValue ? newValue.groupCode : '');
+            }}
+            sx={{
+              minWidth: '300px',
+              '& .MuiAutocomplete-input': {
+                width: '100% !important'
               }
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: '300px',
-                    width: 'auto',
-                    minWidth: '250px'
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Rechercher un groupe"
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& input': {
+                      width: '100%'
+                    }
                   }
-                }
-              }}
-            >
-              <MenuItem value="">
-                <em>Tous les groupes</em>
-              </MenuItem>
-              {groups.map(group => (
-                <MenuItem 
-                  key={group.groupCode} 
-                  value={group.groupCode}
-                  sx={{
-                    minHeight: '48px',
-                    padding: '12px 16px'
-                  }}
-                >
-                  {group.groupCode}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <Typography noWrap>
+                  {option.groupCode}
+                </Typography>
+              </li>
+            )}
+            filterOptions={(options, { inputValue }) => {
+              return options.filter(option =>
+                option.groupCode.toLowerCase().includes(inputValue.toLowerCase())
+              );
+            }}
+          />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <TextField

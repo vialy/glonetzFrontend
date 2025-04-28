@@ -10,16 +10,27 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid
+  Grid,
+  CircularProgress,
+  Typography
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api`;
 
+const courseInfoOptions = [
+  { value: 'Complete level', label: 'Complete level' },
+  { value: 'Partially completed level', label: 'Partially completed level' },
+  { value: 'Course dropped out', label: 'Course dropped out' },
+  { value: 'No participation', label: 'No participation' }
+];
+
 const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
   const { token } = useAuth();
   const [groups, setGroups] = useState([]);
   const [dateError, setDateError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   // Fonction pour formater la date en YYYY-MM-DD sans décalage horaire
   const formatDateForInput = (dateString) => {
@@ -38,18 +49,18 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
   };
 
   const [formData, setFormData] = useState({
-    fullName: '',
-    dateOfBirth: '',
-    placeOfBirth: '',
-    referenceLevel: '',
-    courseStartDate: '',
-    courseEndDate: '',
-    lessonUnits: '',
-    lessonsAttended: '',
-    comments: '',
-    evaluation: '',
-    courseInfo: '',
-    groupCode: ''
+    fullName: certificate?.fullName || '',
+    dateOfBirth: certificate?.dateOfBirth ? formatDateForInput(certificate.dateOfBirth) : '',
+    placeOfBirth: certificate?.placeOfBirth || '',
+    referenceLevel: certificate?.referenceLevel || 'A1',
+    courseStartDate: certificate?.courseStartDate ? formatDateForInput(certificate.courseStartDate) : '',
+    courseEndDate: certificate?.courseEndDate ? formatDateForInput(certificate.courseEndDate) : '',
+    lessonUnits: certificate?.lessonUnits || '',
+    lessonsAttended: certificate?.lessonsAttended || '',
+    evaluation: certificate?.evaluation || 'Participant',
+    courseInfo: certificate?.courseInfo || '',
+    comments: certificate?.comments || '',
+    groupCode: certificate?.groupCode || ''
   });
 
   // Charger les groupes au chargement du composant
@@ -97,13 +108,13 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
         fullName: '',
         dateOfBirth: '',
         placeOfBirth: '',
-        referenceLevel: '',
+        referenceLevel: 'A1',
         courseStartDate: '',
         courseEndDate: '',
         lessonUnits: '',
         lessonsAttended: '',
         comments: '',
-        evaluation: '',
+        evaluation: 'Participant',
         courseInfo: '',
         groupCode: ''
       });
@@ -193,8 +204,45 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
       setDateError(error);
       return;
     }
-    
-    onSubmit(formData);
+
+    setIsSubmitting(true);
+    try {
+      // Vérifier si un certificat similaire existe déjà
+      const checkResponse = await fetch(`${API_URL}/certificates/check-duplicate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          dateOfBirth: formData.dateOfBirth,
+          referenceLevel: formData.referenceLevel,
+          courseStartDate: formData.courseStartDate,
+          courseEndDate: formData.courseEndDate
+        })
+      });
+
+      const checkResult = await checkResponse.json();
+
+      if (!checkResponse.ok) {
+        throw new Error(checkResult.error || 'Une erreur est survenue lors de la vérification');
+      }
+
+      if (checkResult.exists) {
+        setError('Un certificat avec ces informations existe déjà');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Si pas de doublon, procéder à la création
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Error submitting certificate:', error);
+      setError(error.message || 'Une erreur est survenue lors de la création du certificat');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -204,6 +252,13 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
       </DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
+          {error && (
+            <Grid item xs={12}>
+              <Typography color="error" sx={{ mb: 2 }}>
+                {error}
+              </Typography>
+            </Grid>
+          )}
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -290,9 +345,9 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sx={{ mb: 2 }}>
+            <Grid item xs={12}>
               <FormControl fullWidth required>
-                <InputLabel sx={{ fontSize: '1.1rem' }}>Groupe</InputLabel>
+                <InputLabel>Groupe name</InputLabel>
                 <Select
                   name="groupCode"
                   value={formData.groupCode}
@@ -303,7 +358,7 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
                     width: '100%',
                     '& .MuiSelect-select': {
                       fontSize: '1.2rem',
-                      padding: '16px 20px',
+                      padding: '20px 24px',
                       lineHeight: '1.5',
                       whiteSpace: 'pre-wrap !important',
                       overflow: 'visible',
@@ -324,11 +379,11 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
                       sx: {
                         maxHeight: 400,
                         width: 'auto',
-                        minWidth: '300px',
+                        minWidth: '500px',
                         '& .MuiMenuItem-root': {
                           fontSize: '1.2rem',
-                          padding: '16px 20px',
-                          minHeight: '50px',
+                          padding: '20px 24px',
+                          minHeight: '60px',
                           whiteSpace: 'pre-wrap',
                           wordBreak: 'break-word'
                         }
@@ -355,14 +410,57 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Course Information"
-                name="courseInfo"
-                value={formData.courseInfo}
-                onChange={handleChange}
-                required
-              />
+              <FormControl fullWidth required>
+                <InputLabel>Course Information</InputLabel>
+                <Select
+                  value={formData.courseInfo}
+                  label="Course Information"
+                  name="courseInfo"
+                  onChange={(e) => handleChange({ target: { name: 'courseInfo', value: e.target.value } })}
+                  required
+                  sx={{
+                    minHeight: '70px',
+                    width: '100%',
+                    '& .MuiSelect-select': {
+                      fontSize: '1.2rem',
+                      padding: '20px 24px',
+                      lineHeight: '1.5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      minWidth: '200px'
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderWidth: '2px'
+                    }
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        '& .MuiMenuItem-root': {
+                          fontSize: '1.2rem',
+                          padding: '20px 24px',
+                          minHeight: '60px'
+                        }
+                      }
+                    }
+                  }}
+                >
+                  {courseInfoOptions.map((option) => (
+                    <MenuItem 
+                      key={option.value} 
+                      value={option.value}
+                      sx={{
+                        fontSize: '1.2rem',
+                        padding: '20px 24px',
+                        whiteSpace: 'normal',
+                        wordWrap: 'break-word'
+                      }}
+                    >
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -405,14 +503,36 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Annuler</Button>
+          <Button 
+            onClick={onClose} 
+            disabled={isSubmitting}
+          >
+            Annuler
+          </Button>
           <Button 
             type="submit" 
             variant="contained" 
             color="primary"
-            disabled={!!dateError}
+            disabled={!!dateError || isSubmitting}
+            sx={{ position: 'relative' }}
           >
-            {certificate ? 'Modifier' : 'Créer'}
+            {isSubmitting ? (
+              <>
+                {certificate ? 'Modification en cours...' : 'Création en cours...'}
+                <CircularProgress 
+                  size={24} 
+                  sx={{ 
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    marginTop: '-12px',
+                    marginLeft: '-12px'
+                  }} 
+                />
+              </>
+            ) : (
+              certificate ? 'Modifier' : 'Créer'
+            )}
           </Button>
         </DialogActions>
       </form>
