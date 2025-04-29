@@ -207,35 +207,6 @@ const CertificateForm = ({ open, onClose, onSubmit, certificate = null }) => {
 
     setIsSubmitting(true);
     try {
-      // Vérifier si un certificat similaire existe déjà
-      const checkResponse = await fetch(`${API_URL}/certificates/check-duplicate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          dateOfBirth: formData.dateOfBirth,
-          referenceLevel: formData.referenceLevel,
-          courseStartDate: formData.courseStartDate,
-          courseEndDate: formData.courseEndDate
-        })
-      });
-
-      const checkResult = await checkResponse.json();
-
-      if (!checkResponse.ok) {
-        throw new Error(checkResult.error || 'Une erreur est survenue lors de la vérification');
-      }
-
-      if (checkResult.exists) {
-        setError('Un certificat avec ces informations existe déjà');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Si pas de doublon, procéder à la création
       await onSubmit(formData);
     } catch (error) {
       console.error('Error submitting certificate:', error);
