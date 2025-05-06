@@ -872,7 +872,7 @@ const CertificateList = () => {
                   <TableCell>{certificate.groupCode}</TableCell>
                   <TableCell>
                     <IconButton
-                      onClick={() => handleGenerateSelected()}
+                      onClick={() => handleDownloadPDF(certificate._id)}
                       size="small"
                       title="Générer PDF"
                     >
