@@ -114,6 +114,7 @@ const CertificateList = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [certificatesToDelete, setCertificatesToDelete] = useState(null);
   const [groups, setGroups] = useState([]);
+  const [downloadingPDF, setDownloadingPDF] = useState(null);
 
   const canModify = user.role === 'admin' || user.role === 'manager';
   const isAdmin = user.role === 'admin';
@@ -359,6 +360,7 @@ const CertificateList = () => {
 
   const handleDownloadPDF = async (certificateId) => {
     try {
+      setDownloadingPDF(certificateId);
       console.log('Début du téléchargement pour le certificat:', certificateId);
       console.log('Token utilisé:', token);
       
@@ -428,6 +430,8 @@ const CertificateList = () => {
         message: errorMessage,
         severity: 'error'
       });
+    } finally {
+      setDownloadingPDF(null);
     }
   };
 
@@ -620,8 +624,13 @@ const CertificateList = () => {
               <IconButton 
                 onClick={() => handleDownloadPDF(certificate._id)}
                 size="small"
+                disabled={downloadingPDF === certificate._id}
               >
-                <PictureAsPdfIcon />
+                {downloadingPDF === certificate._id ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  <PictureAsPdfIcon />
+                )}
               </IconButton>
             </Tooltip>
             <Tooltip title="Modifier">
@@ -875,8 +884,13 @@ const CertificateList = () => {
                       onClick={() => handleDownloadPDF(certificate._id)}
                       size="small"
                       title="Générer PDF"
+                      disabled={downloadingPDF === certificate._id}
                     >
-                      <PictureAsPdfIcon />
+                      {downloadingPDF === certificate._id ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <PictureAsPdfIcon />
+                      )}
                     </IconButton>
                     
                     {canModify && (
